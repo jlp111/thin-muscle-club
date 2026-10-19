@@ -1,10 +1,22 @@
 /* 开源脱敏回归：断言「真实内容渲染」，而非仅「页面没报错」。
    覆盖：示例画像注入层 / 派生值文案 / 城市回落 / 硬编码个人数据清零。
-   用法：TZ=Asia/Shanghai node tests/verify-privacy.js */
+   用法：TZ=Asia/Shanghai node tests/verify-privacy.js
+        TM_TARGET=migrate/out/index-tracker.html node tests/verify-privacy.js（合并版）
+
+   双契约说明（P5 收口，2026-10-16）：
+   S3/S4/S5 原按**源系统** DOM 契约编写（护肤页渲染「30 岁、体脂 20%」），
+   迁移产物重写了护肤页——画像派生面只剩「城市句」与抗衰页蛋白区间，
+   年龄/体脂不再上页。本节因此按目标架构分支：
+     · 源 index.html（#app + [data-tab]）→ 原契约，断言不变；
+     · 合并产物（#page-<key> + [data-page]）→ 产物真实契约（ grep 取证，非印象）。
+   两条分支覆盖同一意图：示例值真实渲染 / 注入覆盖生效 / 缺字段回落为中性表述。 */
 const fs = require('fs');
 const path = require('path');
 
-const P = path.join(__dirname, '..', 'index.html');
+/* 被测文件可由 TM_TARGET 指定：默认 index.html，合并版传 index-tracker.html */
+const P = process.env.TM_TARGET
+  ? path.resolve(process.env.TM_TARGET)
+  : path.join(__dirname, '..', 'index.html');
 const html = fs.readFileSync(P, 'utf8');
 
 let JSDOM;
@@ -57,28 +69,63 @@ ok('示例模板文件已入库', fs.existsSync(path.join(__dirname, '..', 'prof
 function render(beforeParse) {
   const dom = new JSDOM(html, {
     runScripts: 'dangerously', url: 'https://localhost/',
-    pretendToBeVisual: true, beforeParse
+    pretendToBeVisual: true,
+    beforeParse(win) {
+      /* jsdom 不实现 matchMedia（真实浏览器均有）。合并产物的 setPage 用
+         matchMedia('(prefers-reduced-motion: reduce)') 决定滚动行为，主题模块亦有调用
+         ——属宿主能力差异而非产品缺陷，补一个最小实现，让验收能在 jsdom 下真实跑完。 */
+      if (!win.matchMedia) {
+        win.matchMedia = q => ({
+          matches: false, media: q,
+          addEventListener() {}, removeEventListener() {},
+          addListener() {}, removeListener() {}, dispatchEvent() { return false; }
+        });
+      }
+      if (beforeParse) beforeParse(win);
+    }
   });
   return dom.window;
 }
+/* 导航辅助（架构无关）：
+   原版 index.html 用薄肌 tab 路由（`[data-tab]` + `#app`）；
+   迁移产物改用追踪台页面路由（`[data-page]` + `#page-<key>`）。
+   这里两者兼容，并且在目标不存在时**返回空串而不是抛异常** ——
+   否则 S3 会中断整个脚本，导致其后的源文件级断言（S6/S7）也执行不到。
+   注意：断言逻辑未改动，只修正导航锚点。 */
 function goto(win, tab) {
-  win.document.querySelector('[data-tab="' + tab + '"]').click();
-  return win.document.querySelector('#app').textContent;
+  const d = win.document;
+  const btn = d.querySelector('[data-tab="' + tab + '"]') || d.querySelector('[data-page="' + tab + '"]');
+  if (btn && btn.click) btn.click();
+  const root = d.querySelector('#app') || d.querySelector('#page-' + tab);
+  return root ? root.textContent : '';
 }
+/* 目标架构判定（决定 S3/S4/S5 走哪套契约） */
+const IS_TRACKER = /id="page-home"/.test(html);
 
 /* ---------- S3 默认（无 profile.local.js）：示例值渲染 ---------- */
 section('S3  默认画像 · 示例值真实渲染');
 const w1 = render();
 const skinText = goto(w1, 'skin');
-ok('护肤页渲染出示例年龄与体脂', skinText.indexOf('30 岁、体脂 20%') >= 0,
-   skinText.slice(skinText.indexOf('体脂') - 20, skinText.indexOf('体脂') + 20));
-ok('护肤页中医视角回落到「湿热地区」', skinText.indexOf('湿热地区夏季湿热') >= 0);
-ok('护肤页不再出现「深圳」', skinText.indexOf('深圳') < 0);
-
 const longText = goto(w1, 'longevity');
-ok('抗衰页蛋白条目渲染派生区间（70kg → 112-154g）',
-   longText.indexOf('112-154g') >= 0,
-   (longText.match(/1\.6-2\.2 g\/kg[^，]{0,24}/) || ['(未找到)'])[0]);
+if (IS_TRACKER) {
+  /* 合并产物契约（pages.js 实测）：护肤页画像派生面 = 城市句；年龄/体脂不再上页，
+     改由抗衰页蛋白区间（DERIVED.proText，默认 70kg → 112-154g）承载「示例值真实渲染」。 */
+  ok('抗衰页蛋白条目渲染派生区间（默认 70kg → 112-154g）',
+     longText.indexOf('112-154g') >= 0,
+     (longText.match(/1\.6-2\.2 g\/kg[^，]{0,24}/) || ['(未找到)'])[0]);
+  ok('护肤页城市回落为「湿热地区」', skinText.indexOf('湿热地区夏季湿热') >= 0,
+     (skinText.match(/节气与气候：.{0,12}/) || ['(未找到)'])[0]);
+  ok('护肤页不再出现「深圳」', skinText.indexOf('深圳') < 0);
+} else {
+  ok('护肤页渲染出示例年龄与体脂', skinText.indexOf('30 岁、体脂 20%') >= 0,
+     skinText.slice(skinText.indexOf('体脂') - 20, skinText.indexOf('体脂') + 20));
+  ok('护肤页中医视角回落到「湿热地区」', skinText.indexOf('湿热地区夏季湿热') >= 0);
+  ok('护肤页不再出现「深圳」', skinText.indexOf('深圳') < 0);
+
+  ok('抗衰页蛋白条目渲染派生区间（70kg → 112-154g）',
+     longText.indexOf('112-154g') >= 0,
+     (longText.match(/1\.6-2\.2 g\/kg[^，]{0,24}/) || ['(未找到)'])[0]);
+}
 
 /* ---------- S4 注入真实画像：覆盖生效 ---------- */
 section('S4  注入 profile.local.js · 覆盖生效');
@@ -87,12 +134,20 @@ const w2 = render(win => {
                          bodyfat: 19.5, muscleRate: 76.3, city: '示例城市' };
 });
 const skinText2 = goto(w2, 'skin');
-ok('护肤页年龄/体脂随注入画像变化', skinText2.indexOf('29 岁、体脂 19.5%') >= 0);
-ok('护肤页城市随注入画像变化', skinText2.indexOf('示例城市夏季湿热') >= 0);
 const longText2 = goto(w2, 'longevity');
-ok('抗衰页蛋白区间随注入画像变化（66.7kg → 107-147g）',
-   longText2.indexOf('107-147g') >= 0,
-   (longText2.match(/1\.6-2\.2 g\/kg[^，]{0,24}/) || ['(未找到)'])[0]);
+if (IS_TRACKER) {
+  ok('抗衰页蛋白区间随注入画像变化（66.7kg → 107-147g）',
+     longText2.indexOf('107-147g') >= 0,
+     (longText2.match(/1\.6-2\.2 g\/kg[^，]{0,24}/) || ['(未找到)'])[0]);
+  ok('护肤页城市随注入画像变化', skinText2.indexOf('示例城市夏季湿热') >= 0,
+     (skinText2.match(/节气与气候：.{0,12}/) || ['(未找到)'])[0]);
+} else {
+  ok('护肤页年龄/体脂随注入画像变化', skinText2.indexOf('29 岁、体脂 19.5%') >= 0);
+  ok('护肤页城市随注入画像变化', skinText2.indexOf('示例城市夏季湿热') >= 0);
+  ok('抗衰页蛋白区间随注入画像变化（66.7kg → 107-147g）',
+     longText2.indexOf('107-147g') >= 0,
+     (longText2.match(/1\.6-2\.2 g\/kg[^，]{0,24}/) || ['(未找到)'])[0]);
+}
 
 /* ---------- S5 注入缺字段：回落不渲染 null ---------- */
 section('S5  画像缺字段 · 回落为中性表述');

@@ -6,18 +6,61 @@ const fs = require('fs');
 const vm = require('vm');
 const path = require('path');
 
-const P = path.join(__dirname, '..', 'index.html');
+/* 被测文件可由 TM_TARGET 指定：默认 index.html，合并版传 index-tracker.html */
+const P = process.env.TM_TARGET
+  ? path.resolve(process.env.TM_TARGET)
+  : path.join(__dirname, '..', 'index.html');
 const src = fs.readFileSync(P, 'utf8');
 
-const uiMark = src.indexOf('/* ----------------------- 模块: UI (路由/渲染) ----------------------- */');
-if (uiMark < 0) throw new Error('未找到 UI 模块标记');
 /* 定位「主脚本」而非「第一个 script」：v3.32 起 <head> 内新增了防闪烁内联脚本，
    用 indexOf('<script>') 会从那支小脚本内部开始切片、跨越 </script><body> 与主脚本标签，
-   导致 vm 报 `Unexpected token '<'`。主脚本 = UI 模块标记之前的最后一个 <script>。
+   导致 vm 报 `Unexpected token '<'`。
+   注意：断言逻辑未改动，只修正提取锚点。
+
+   合并版 index-tracker.html 里，这段标记会出现两次：
+     ① 页面正文（#tm-root 内）里的一段说明性注释
+     ② 薄肌主脚本里真正的模块分隔注释
+   因此不能取第一次出现，必须取「位于某个 <script>…</script> 内部」的那一次。
+   原版 index.html 只有一次，天然满足该条件，两种文件都能正确定位。 */
+const UI_MARK_STR = '/* ----------------------- 模块: UI (路由/渲染) ----------------------- */';
+/* 逻辑层定位（架构无关）：迁移产物会废弃薄肌 UI 模块，届时 UI 标记注释不复存在。
+   因此右边界按优先级回落：UI 标记 → `const UI =` 声明 → 脚本块尾。
+   旧结构（index.html）走第一条，行为与改动前完全一致；新结构走后两条。
    注意：断言逻辑未改动，只修正提取锚点。 */
-const s0 = src.lastIndexOf('<script>', uiMark) + 8;
-if (s0 < 8) throw new Error('未找到主脚本 <script> 标记');
-const code = src.slice(s0, uiMark);
+function locateLogic(text, kbIdx) {
+  const ps = text.lastIndexOf('<script', kbIdx);
+  const s0 = text.indexOf('>', ps) + 1;
+  let end = locateUiMark(text);
+  if (end < 0) {
+    end = text.indexOf('const UI = (function(){', kbIdx);
+    if (end < 0) end = text.indexOf('</script>', s0);
+  }
+  return { s0, end };
+}
+function locateUiMark(text) {
+  let from = 0, at;
+  while ((at = text.indexOf(UI_MARK_STR, from)) !== -1) {
+    /* 该标记是否落在某个脚本块内部？ */
+    const ps = text.lastIndexOf('<script', at);
+    if (ps !== -1) {
+      const pe = text.indexOf('>', ps) + 1;
+      const cl = text.indexOf('</script>', pe);
+      if (pe < at && cl > at) return at;
+    }
+    from = at + UI_MARK_STR.length;
+  }
+  return -1;
+}
+/* 逻辑层切片：起点取「包含 KbData 的那个 <script> 块」的体起点（Util 定义在其前，必须一并纳入）；
+   终点由 locateLogic 按优先级回落决定。
+   这样既兼容原版 index.html（终点 = UI 标记注释），
+   也兼容迁移产物（UI 模块已废弃、无标记 → 终点 = `const UI =` 或脚本尾）。 */
+const KB_ANCHOR = 'const KbData = (function(){';
+const kbIdx = src.indexOf(KB_ANCHOR);
+if (kbIdx < 0) throw new Error('未找到逻辑层锚点 const KbData');
+const { s0, end } = locateLogic(src, kbIdx);
+if (s0 <= 0 || end <= s0) throw new Error('逻辑层切片范围非法: s0=' + s0 + ' end=' + end);
+const code = src.slice(s0, end);
 
 function makeLS() {
   const store = {};
@@ -46,7 +89,7 @@ const warnings = [];
 const sandbox = { localStorage: LS, console: { log: console.log, warn: (...a) => warnings.push(a.map(String).join(' ')), error: () => {} } };
 vm.createContext(sandbox);
 const M = vm.runInNewContext(
-  code + '\n;({Util,Store,Library,Plan,Log,Diet,Progress,Supplements});', sandbox);
+  code + '\n;({Util,Store,Library,Plan,Log,Diet,Progress,Supplements,Adapt,Body});', sandbox);
 
 let pass = 0, fail = 0;
 function ok(name, cond, extra) {
@@ -238,6 +281,76 @@ ok('原始内容被另存到 .corrupt', LS.getItem(M.Store.KEY + '.corrupt') ===
 ok('产出加载警告文案', !!M.Store.getLoadWarning(), M.Store.getLoadWarning());
 M.Store.clearLoadWarning();
 ok('清除后警告消失', !M.Store.getLoadWarning());
+
+/* ---------------- V11: Adapt 自适应引擎（头号卖点，表驱动六态） ---------------- */
+section('V11  Adapt 自适应引擎——六态规则 + 周容量');
+const AD = M.Adapt;
+const dayOffset = n => { const d = new Date(); d.setDate(d.getDate() + n); return M.Util.localDate(d); };
+const mkLog = (date, w, r) => ({ id: 'l_' + date, date, dayType: 'push',
+  entries: [{ actionId: 'a_push_dbpress', actionName: '哑铃卧推', sets: [{ weight: w, reps: r }] }] });
+// ① 首练（无历史）
+{
+  const s = AD.suggestion('a_push_dbpress');
+  ok('① 首练：kind=first 且带预设组次提示', s.kind === 'first' && /首练/.test(s.msg), s.msg);
+}
+// ② 优于前高 → +2.5% 上探（50×10 vs 45×10：e1RM 50*(1+10/30)≈66+ > 45*(1.333)≈60 → 上探）
+// 注意 round05 语义：50*1.025=51.2499…（浮点）→ *2=102.4999 → round=102 → 51kg
+M.Store.set(d => { d.logs = [mkLog(dayOffset(-7), 45, 10), mkLog(dayOffset(-1), 50, 10)]; });
+{
+  const s = AD.suggestion('a_push_dbpress');
+  ok('② 优于前高 → +2.5% 上探 50→51kg', s.kind === 'plan' && s.target === 51 && /上探/.test(s.msg), 'target=' + s.target + ' | ' + s.msg);
+}
+// ③ 稳定（持平）→ 维持
+M.Store.set(d => { d.logs = [mkLog(dayOffset(-7), 50, 10), mkLog(dayOffset(-1), 50, 10)]; });
+{
+  const s = AD.suggestion('a_push_dbpress');
+  ok('③ 持平 → 维持 50kg', s.kind === 'plan' && s.target === 50 && /维持/.test(s.msg), 'target=' + s.target + ' | ' + s.msg);
+}
+// ④ 未达前高 → 维持 + 质量提示
+M.Store.set(d => { d.logs = [mkLog(dayOffset(-7), 52, 10), mkLog(dayOffset(-1), 48, 10)]; });
+{
+  const s = AD.suggestion('a_push_dbpress');
+  ok('④ 未达前高 → 维持 48kg 且提示做满质量', s.kind === 'plan' && s.target === 48 && /未达前高/.test(s.msg), 'target=' + s.target + ' | ' + s.msg);
+}
+// ⑤ 单条记录 → 维持建立基准
+M.Store.set(d => { d.logs = [mkLog(dayOffset(-1), 50, 10)]; });
+{
+  const s = AD.suggestion('a_push_dbpress');
+  ok('⑤ 仅一条记录 → 维持 50kg 建立基准', s.kind === 'plan' && s.target === 50 && /基准/.test(s.msg), 'target=' + s.target + ' | ' + s.msg);
+}
+// ⑥ 5 天回归 → 恢复性回归（gapDays>=5，覆盖 why）
+M.Store.set(d => { d.logs = [mkLog(dayOffset(-8), 45, 10), mkLog(dayOffset(-6), 50, 10)]; });
+{
+  const s = AD.suggestion('a_push_dbpress');
+  ok('⑥ 6 天未练 → 恢复性回归文案', s.kind === 'plan' && /恢复性回归/.test(s.msg), s.msg);
+}
+// ⑦ 睡眠 <6h → -10%（51×0.9=45.9 → round05=46kg）
+M.Store.set(d => {
+  d.logs = [mkLog(dayOffset(-7), 45, 10), mkLog(dayOffset(-1), 50, 10)];
+  d.sleep = [{ id: 's1', date: dayOffset(0), hours: 5, quality: 3, bedtime: '01:00' }];
+});
+{
+  const s = AD.suggestion('a_push_dbpress');
+  ok('⑦ 昨夜睡眠 5h → 51 再下调 10% 至 46kg', s.kind === 'plan' && s.target === 46 && /已下调 10%/.test(s.msg), 'target=' + s.target + ' | ' + s.msg);
+}
+// ⑧ 周容量：本周 2 次卧推（3 组/次）→ chest=6 组
+M.Store.set(d => {
+  d.logs = [0, 1].map(i => ({ id: 'w' + i, date: dayOffset(-i), dayType: 'push',
+    entries: [{ actionId: 'a_push_dbpress', actionName: '哑铃卧推', sets: [{ weight: 40, reps: 12 }, { weight: 40, reps: 12 }, { weight: 40, reps: 12 }] }] }));
+  d.sleep = [];
+});
+{
+  const wv = AD.weekVolume();
+  const chest = wv.find(g => g.key === 'chest');
+  ok('⑧ 周容量 chest=6 组（2 次×3 组，最近 7 天窗口）', !!chest && chest.sets === 6, JSON.stringify(chest));
+}
+// ⑨ muscleOf 归类抽查（新增的硬拉/深蹲类必须归 legs 而非 other；用真实 muscles 字段）
+ok('⑨ muscleOf：杠铃硬拉→legs、杠铃深蹲→legs、平板→core、壶铃摆动→legs、八段锦→flex',
+   AD.muscleOf({ name: '杠铃硬拉', muscles: '腘绳+臀+竖脊肌(后链)' }) === 'legs' &&
+   AD.muscleOf({ name: '杠铃深蹲', muscles: '股四+臀+核心(全身)' }) === 'legs' &&
+   AD.muscleOf({ name: '平板支撑', muscles: '核心' }) === 'core' &&
+   AD.muscleOf({ name: '壶铃摆动', muscles: '臀+腘绳肌爆发(髋发力)' }) === 'legs' &&
+   AD.muscleOf({ name: '八段锦', muscles: '气血/柔韧' }) === 'flex');
 
 console.log('\n' + '='.repeat(64));
 console.log('逻辑层回归结果：  PASS ' + pass + '   FAIL ' + fail);

@@ -2,11 +2,17 @@
    用法：TZ=Asia/Shanghai node tests/verify-dom.js
    依赖：jsdom（若未安装会给出提示并退出，不影响逻辑层测试）
    覆盖：12 页渲染 / 日期默认值 / label 关联 / 知识库灰化 / 清单开关 /
-        确认弹窗 / 训练记录写入 / 饮食空判定 / 导入拒绝 / XSS 防线 / 二次回归 */
+        确认弹窗 / 训练记录写入 / 饮食空判定 / 导入拒绝 / XSS 防线 / 二次回归
+   目标：**仅源系统 index.html**（#app + [data-tab] 契约）。
+        合并版是另一套 DOM 契约（#page-<key> + [data-page]），
+        请用 tests/verify-integration.js——两者不通用。 */
 const fs = require('fs');
 const path = require('path');
 
-const P = path.join(__dirname, '..', 'index.html');
+/* 被测文件可由 TM_TARGET 指定：默认 index.html，合并版传 index-tracker.html */
+const P = process.env.TM_TARGET
+  ? path.resolve(process.env.TM_TARGET)
+  : path.join(__dirname, '..', 'index.html');
 const html = fs.readFileSync(P, 'utf8');
 
 let JSDOM, VirtualConsole;
@@ -42,18 +48,41 @@ function ok(name, cond, extra) {
   else { fail++; console.log('  FAIL  ' + name + (extra !== undefined ? '  → ' + String(extra).slice(0, 140) : '')); }
 }
 function section(t) { console.log('\n' + '='.repeat(64) + '\n' + t + '\n' + '='.repeat(64)); }
+
+/* 同步等待条件成立。
+   导入/导出走 nextFrame()（双 requestAnimationFrame）以呈现「导入中…」中间态，
+   属于设计内的异步；原先用单层 setTimeout 会在反馈落地前就断言，产生假失败。
+   这里改为在短窗口内轮询等待：条件成立即返回，超时则继续往下断言（让失败真实暴露）。 */
+function settleAsync(fn, timeoutMs) {
+  const limit = timeoutMs || 600;
+  const t0 = Date.now();
+  return new Promise(function (resolve) {
+    (function tick() {
+      let v;
+      try { v = fn(); } catch (e) { v = false; }
+      if (v) return resolve(true);
+      if (Date.now() - t0 > limit) return resolve(false);
+      setTimeout(tick, 8);
+    })();
+  });
+}
 const localToday = (() => { const d = new Date(); const p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); })();
 
 /* ---------- S1 初始化 ---------- */
 section('S1  初始化与全局状态');
 ok('页面加载无 JS 异常', jsErrors.length === 0, jsErrors.join(' | '));
-ok('12 个 Tab 已渲染', doc.querySelectorAll('#tabs .tab').length === 12, doc.querySelectorAll('#tabs .tab').length);
+/* Tab 清单与数量：从源文件 TAB_GROUPS 段提取（限定区间，防止误匹配 Diet.FLAGS/CATS 的同款格式） */
+const __tgSrc = html.slice(html.indexOf('const TAB_GROUPS'), html.indexOf('const TABS'));
+const __tabKeys = [...new Set((__tgSrc.match(/\{k:'([a-z]+)',label:'[^']+'\}/g) || []).map(s => s.match(/\{k:'([a-z]+)'/)[1]))];
+ok('Tab 数与源文件 TAB_GROUPS 定义一致（数据驱动，防漂移）',
+   doc.querySelectorAll('#tabs .tab').length === __tabKeys.length,
+   'DOM=' + doc.querySelectorAll('#tabs .tab').length + ' / 源=' + __tabKeys.length + ' (' + __tabKeys.join(',') + ')');
 ok('4 个分组标签存在', doc.querySelectorAll('#tabs .nav-glabel').length === 4, doc.querySelectorAll('#tabs .nav-glabel').length);
 ok('分组分隔符存在', doc.querySelectorAll('#tabs .nav-sep').length === 3, doc.querySelectorAll('#tabs .nav-sep').length);
 /* 版本号：APP_VERSION 为唯一来源（R14）。改为三重自校验 —— 不再硬编码版本值，
    且新增「源文件两处必须一致」这一失败模式（v3.24 实测教训：只改静态 span 不改
    APP_VERSION，运行时会被覆盖，页面上看不出问题）。 */
-const __srcVer = (html.match(/id="ver">([^<]+)</) || [])[1];
+const __srcVer = (html.match(/id="ver"[^>]*>([^<]+)</) || [])[1];
 const __appVer = (html.match(/const APP_VERSION\s*=\s*'([^']+)'/) || [])[1];
 ok('源文件静态 #ver 与 APP_VERSION 一致（防只改一处）',
    !!__srcVer && __srcVer === __appVer, 'static=' + __srcVer + ' / APP_VERSION=' + __appVer);
@@ -64,9 +93,9 @@ ok('版本号格式合法（v数字.数字）', /^v\d+\.\d+$/.test(__appVer || '
 ok('概览页已渲染', doc.querySelector('#app').textContent.length > 200);
 ok('无残留「页面渲染失败」', doc.querySelector('#app').textContent.indexOf('页面渲染失败') < 0);
 
-/* ---------- S2 12 个页面逐个渲染 ---------- */
-section('S2  12 个页面逐个渲染（Pages 索引驱动）');
-const tabs = ['home','plan','library','log','diet','progress','supps','herbs','release','longevity','skin','data'];
+/* ---------- S2 全部页面逐个渲染（tabs 清单从源文件 TAB_GROUPS 段提取，防漏） ---------- */
+section('S2  全部页面逐个渲染（Pages 索引驱动）');
+const tabs = __tabKeys;
 for (const k of tabs) {
   const btn = doc.querySelector('[data-tab="' + k + '"]');
   if (!btn) { ok('Tab ' + k + ' 存在', false); continue; }
@@ -173,15 +202,17 @@ doc.querySelector('#saveLog').click();
 ok('保存后历史记录出现该条', doc.querySelector('#logHistory').textContent.indexOf('哑铃卧推') >= 0 || doc.querySelector('#logHistory').textContent.indexOf('16kg') >= 0);
 ok('保存后无 JS 异常', jsErrors.length === 0, jsErrors.join(' | '));
 
-/* ---------- S8 饮食打卡（R10 空判定） ---------- */
-section('S8  R10 饮食打卡空判定');
+/* ---------- S8 饮食打卡（R10 空判定，分餐次表单） ---------- */
+section('S8  R10 饮食打卡空判定（分餐次）');
 doc.querySelector('[data-tab="diet"]').click();
-doc.querySelector('#d_pro').value = '130';          // 只填蛋白，不填热量
+doc.querySelector('#mealRows .meal-card .m_pro').value = '130';   // 只填第一餐（早餐）蛋白，不填热量
 doc.querySelector('#addDiet').click();
 ok('只填蛋白可以保存', doc.querySelector('#dietMatrix').textContent.length > 0);
 ok('矩阵中不出现「达标」误判',
   doc.querySelector('#dietMatrix').textContent.indexOf('达标') < 0,
   doc.querySelector('#dietMatrix').textContent.replace(/\s+/g, ' ').slice(0, 120));
+ok('餐次明细展示当日记录（早餐 130g）',
+  doc.querySelector('#todayMeals').textContent.indexOf('130') >= 0 && doc.querySelector('#todayMeals').textContent.indexOf('早餐') >= 0);
 
 /* ---------- S9 备份页与留档 ---------- */
 section('S9  备份页 / 留档机制');
@@ -191,7 +222,12 @@ ok('备份页显示导出时效', doc.querySelector('#app').textContent.indexOf(
 const ta = doc.querySelector('#io');
 ta.value = '[]';                                    // R5：非法导入
 doc.querySelector('#imp').click();
-setTimeout(() => {
+setTimeout(async () => {
+  /* 导入经 nextFrame() 双帧异步，等反馈真正落地再断言 */
+  await settleAsync(() => {
+    const e = doc.querySelector('#io_err');
+    return e && e.classList.contains('show');
+  });
   ok('R5 非法导入被拒绝并给出原因',
     doc.querySelector('#io_err').classList.contains('show') &&
     doc.querySelector('#io_err').textContent.indexOf('这不是本系统的备份') >= 0,
@@ -207,7 +243,9 @@ setTimeout(() => {
   doc.querySelector('#f_mus') ? 0 : 0;
   doc.querySelector('#f_points').value = '尖括号<script>alert(2)</script>';
   doc.querySelector('#f_save').click();
-  setTimeout(() => {
+  setTimeout(async () => {
+    /* 保存同样经 nextFrame()，等列表重渲染后再断言 */
+    await settleAsync(() => doc.querySelector('#app').textContent.indexOf('尖括号') >= 0);
     const app = doc.querySelector('#app');
     // 断言修正（2026-09-16）：原用「#app img 总数 === 0」作代理指标，前提是应用里本无 img。
     // v3.24 起动作卡引入合法的数据集演示动画 <img class="ds-gif">，该代理失效。
@@ -298,9 +336,11 @@ setTimeout(() => {
       [...flow.querySelectorAll('details')].map(d => d.querySelector('summary').textContent.slice(0, 24)).join(' | '));
     ok('summary 内容包在 span 内（避免与 ::before 被拆成多个 flex item）',
       [...flow.querySelectorAll('details > summary')].every(s => s.firstElementChild && s.firstElementChild.tagName === 'SPAN'));
+    /* 合并版会给薄肌选择器加 #tm-root 作用域前缀，故这里只匹配类名本身，
+       不要求它出现在选择器起始处 —— 断的是「规则内容」，不是「选择器写法」。 */
     ok('.chip 定义含 gap（避免文本与数值被 flex 折叠空格而粘连）',
-      /\.chip\{[^}]*gap:var\(--sp-2\)/.test(doc.querySelector('style').textContent),
-      (doc.querySelector('style').textContent.match(/\.chip\{[^}]*\}/) || [''])[0].slice(0, 80));
+      /\.chip\s*\{[^}]*gap:var\(--sp-2\)/.test(doc.querySelector('style').textContent),
+      (doc.querySelector('style').textContent.match(/[^{}]*\.chip\s*\{[^}]*\}/) || [''])[0].slice(0, 80));
     ok('#sk-habit 十条习惯改为卡片', habit.querySelectorAll('.grid.dense .card').length === 10,
       habit.querySelectorAll('.grid.dense .card').length);
     ok('#sk-habit 每张卡为「短标题 + 一句理由」',
@@ -315,8 +355,9 @@ setTimeout(() => {
              ② 中文分步的要领必须带 .key 高亮，且数据侧 ** 标记不得泄漏到页面。 */
     section('S14  动作库字段标题配色 / 中文分步要领标注');
     const cssText = doc.querySelector('style').textContent;
+    /* 同上：允许选择器带作用域前缀 */
     const colorRule = cls => {
-      const m = cssText.match(new RegExp('\\.fld-k\\.' + cls + '\\{color:var\\(--([a-z0-9-]+)\\)\\}'));
+      const m = cssText.match(new RegExp('\\.fld-k\\.' + cls + '\\s*\\{color:var\\(--([a-z0-9-]+)\\)\\}'));
       return m ? m[1] : null;
     };
     const tones = {anat: colorRule('anat'), step: colorRule('step'), anim: colorRule('anim'), ref: colorRule('ref')};
@@ -326,16 +367,29 @@ setTimeout(() => {
     ok('四个标题色均取自 cat 轴（与要点/常见错误的 status 轴分工不冲突）',
       Object.values(tones).every(v => /^cat-\d$/.test(v)), JSON.stringify(tones));
     ok('.key 要领标注样式已定义（琥珀色 + 加粗）',
-      /\.key\{color:var\(--cat-2\);font-weight:var\(--fw-sb\)/.test(cssText));
+      /\.key\s*\{color:var\(--cat-2\);font-weight:var\(--fw-sb\)/.test(cssText));
 
+    // 逐卡对账：每张渲染卡片的 .key 数 == 该卡片 DS 条目的 ** 对数
+    // （数据驱动且天然适配前序测试的删除/过滤/新增，不再依赖固定总数；
+    //   先确保停在 library 页且有卡，防止空态 vacuous pass）
     doc.querySelector('[data-tab="library"]').click();
     doc.querySelectorAll('#libList details').forEach(d => { d.open = true; });
-    const allKeys = doc.querySelectorAll('#libList .key').length;
-    // 数据侧共 70 处标记；S6 已删除「哑铃卧推」，连带其 3 处，故此处期望 67
-    ok('全库动作卡片共 ' + allKeys + ' 处要领高亮（期望 70 = 70（v3.29 新增楼梯机 +3））',
-      allKeys === 70, allKeys);
+    const dsSrc = html.slice(html.indexOf('const DS = {'), html.indexOf('function dsBox'));
+    const cardCount = doc.querySelectorAll('#libList [data-act]').length;
+    const mismatch = [];
+    doc.querySelectorAll('#libList [data-act]').forEach(card => {
+      const id = card.getAttribute('data-act');
+      const dom = card.querySelectorAll('.key').length;
+      const seg = (dsSrc.match(new RegExp(id + ':\\s*\\{n:"\\d+"[\\s\\S]*?\\]\\}')) || [''])[0];
+      const src = ((seg.match(/\*\*/g) || []).length) / 2;
+      if (dom !== src) mismatch.push(id + ': DOM=' + dom + '/源=' + src);
+    });
+    ok('每张动作卡要领高亮数与数据源逐卡一致（共 ' + doc.querySelectorAll('#libList .key').length + ' 处 / ' + cardCount + ' 卡）',
+      cardCount > 0 && mismatch.length === 0, mismatch.join(' ') || ('卡片数=' + cardCount));
     ok('页面无残留 ** 标记（rich() 已完全消费）',
-      doc.querySelector('#app').textContent.indexOf('**') < 0);
+      doc.querySelector('#app').textContent.indexOf('**') < 0,
+      (() => { const t = doc.querySelector('#app').textContent; const i = t.indexOf('**');
+        return i >= 0 ? '上下文: ...' + t.slice(Math.max(0, i - 70), i + 70).replace(/\n/g, ' ') + '...' : ''; })());
 
     doc.querySelector('#libSearch').value = '上斜哑铃推';
     doc.querySelector('#libSearch').dispatchEvent(new win.Event('input', {bubbles: true}));
@@ -354,9 +408,52 @@ setTimeout(() => {
     doc.querySelector('#libSearch').value = '';
     doc.querySelector('#libSearch').dispatchEvent(new win.Event('input', {bubbles: true}));
 
-    console.log('\n' + '='.repeat(64));
-    console.log('DOM 冒烟测试结果：  PASS ' + pass + '   FAIL ' + fail);
-    console.log('='.repeat(64));
-    process.exit(fail ? 1 : 0);
+    /* ---------- S15 导入备份 XSS 三向量回归（P0-1，QA PoC 实证链路，放最后：异步链需在 exit 前完成） ---------- */
+    section('S15  导入备份 XSS 三向量（cat / id / demo）');
+    doc.querySelector('[data-tab="data"]').click();
+    doc.querySelector('#exp').click();
+    setTimeout(() => {
+      const __base = doc.querySelector('#io').value;
+      const __evil = JSON.parse(__base);
+      __evil.library = [{ id: 'x" autofocus onfocus="alert(1)', name: '恶意动作XSS',
+        cat: 'x"><img src=x onerror=alert(1)>', demo: 'javascript:alert(document.cookie)',
+        points: [], errors: [] }];
+      doc.querySelector('#io').value = JSON.stringify(__evil);
+      doc.querySelector('#imp').click();
+      setTimeout(() => {
+        // 导入成功会跳回 home（#io_err 不在 DOM）；失败则留在备份页且 err 显示
+        const __ioErr = doc.querySelector('#io_err');
+        ok('恶意备份被导入（结构合法，防线在渲染层）',
+           !__ioErr || !__ioErr.classList.contains('show'),
+           __ioErr ? __ioErr.textContent : '（已跳离备份页 = 导入成功）');
+        doc.querySelector('[data-tab="library"]').click();
+        const __ec = [...doc.querySelectorAll('#libList [data-act]')].find(c => c.textContent.indexOf('恶意动作XSS') >= 0);
+        ok('恶意动作已渲染（测试前提）', !!__ec);
+        if (__ec) {
+          ok('向量① javascript: demo 未渲染为可点链接', __ec.querySelectorAll('a[href^="javascript:"]').length === 0);
+          ok('向量② 恶意 cat 未注入 img 元素', __ec.querySelectorAll('img[src="x"]').length === 0);
+          ok('向量③ 恶意 id 未注入事件属性（autofocus/onfocus）',
+             __ec.querySelectorAll('[autofocus],[onfocus]').length === 0);
+          ok('向量③ 恶意 id 未破坏 data-edit-act 取值（esc 往返一致）',
+             (() => { const b = __ec.querySelector('[data-edit-act]'); return !!b && b.getAttribute('data-edit-act') === 'x" autofocus onfocus="alert(1)'; })());
+          const __ct = __ec.querySelector('.tag');
+          ok('恶意 cat 被归一到白名单分类（label 无注入文本）',
+             !!__ct && __ct.textContent.indexOf('<') < 0 && __ct.textContent.indexOf('x"') < 0,
+             __ct ? __ct.textContent.trim() : 'NONE');
+        }
+        // 清理：导入原备份恢复干净数据
+        doc.querySelector('[data-tab="data"]').click();
+        doc.querySelector('#io').value = __base;
+        doc.querySelector('#imp').click();
+        setTimeout(() => {
+          doc.querySelector('[data-tab="library"]').click();
+          ok('清理后恶意条目已移除', doc.querySelector('#libList').textContent.indexOf('恶意动作XSS') < 0);
+          console.log('\n' + '='.repeat(64));
+          console.log('DOM 冒烟测试结果：  PASS ' + pass + '   FAIL ' + fail);
+          console.log('='.repeat(64));
+          process.exit(fail ? 1 : 0);
+        }, 300);
+      }, 300);
+    }, 300);
   }, 60);
 }, 60);

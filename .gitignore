@@ -40,3 +40,16 @@ docs/系统介绍-v3.28.md
 /tmp/
 tests/coverage/
 node_modules/
+# 视觉验收截图（构建产物，不入库）
+.shots/
+
+# ---- 本地开发过程产物（含真实健康数据与调度日志，禁止入库）-------
+# migrate/ 的 *.log 记录了码道智能体的完整调度过程，内含真实体重/体脂/
+# 城市/用户标识共 1400+ 处；src/.snapshots/ 更是未脱敏的旧版 index.html。
+migrate/
+refactor_src/
+# skill 归档导出目录（含生成器脚本与临时凭证排查脚本）
+export/
+# 构建期数据集合快照与内部方案文档（含举例时用到的真实数值）
+--compare
+overview-dedup-plan.md

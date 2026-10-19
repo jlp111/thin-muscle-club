@@ -1,0 +1,752 @@
+{
+  "source": "migrate/src/index.html",
+  "generatedAt": "2026-10-15T23:59:25.190Z",
+  "collections": {
+    "LIBRARY": {
+      "count": 49,
+      "ids": [
+        "a_push_bbpress",
+        "a_push_dbpress",
+        "a_push_incline",
+        "a_push_shpress",
+        "a_push_tricep",
+        "a_push_lat",
+        "a_pull_machine",
+        "a_pull_pulldown",
+        "a_pull_curl",
+        "a_pull_reverse",
+        "a_leg_press",
+        "a_leg_curl",
+        "a_leg_bridge",
+        "a_leg_calf",
+        "a_core_plank",
+        "a_cardio_walk",
+        "a_cardio_bike",
+        "a_cardio_baduan",
+        "a_push_1armsh",
+        "a_pull_1armrow",
+        "a_leg_bbsquat",
+        "a_leg_goblet",
+        "a_leg_deadlift",
+        "a_leg_sumodl",
+        "a_leg_fbsquat",
+        "a_leg_bulgarian",
+        "a_leg_rdl",
+        "a_core_birddog",
+        "a_core_chop",
+        "a_core_deadbug",
+        "a_core_farmer",
+        "a_leg_kbswing",
+        "a_leg_boxjump",
+        "a_core_slam",
+        "a_leg_clam",
+        "a_leg_monster",
+        "a_core_sideplank",
+        "a_leg_slbridge",
+        "a_leg_slrdl",
+        "a_leg_stepup",
+        "a_mob_sls",
+        "a_mob_catcow",
+        "a_mob_hipflex",
+        "a_mob_tspine",
+        "a_mob_ankle",
+        "a_mob_pec",
+        "a_mob_tsext",
+        "a_mob_mofu",
+        "a_cardio_stair"
+      ],
+      "hashes": [
+        "f15e57e83c34e7cd",
+        "95e4c0e47e059211",
+        "b950a0826681dc24",
+        "988221c6b9b1b3a5",
+        "399cbdb7a5bc956c",
+        "6d9534bd497fa9ff",
+        "9650fe1b826873e5",
+        "9e88028ba992acf2",
+        "513992a5234ca9f6",
+        "019a40e6eeb90c82",
+        "02b4a435ef864e6a",
+        "d0297eafa1d656f5",
+        "8ab2ea4fc5d41685",
+        "6a8034703867b2e9",
+        "06ee2472f5d0c1de",
+        "d523bdab988110a7",
+        "d4eaa1691b44e0b8",
+        "5ecce6ddb14f8625",
+        "02a3cc1f749e8688",
+        "fae00b76134385a6",
+        "8869418981337762",
+        "dc10e5f211df24f5",
+        "872f1446431fa233",
+        "70c81cd7e1a65b23",
+        "c4daefb8e5c08740",
+        "e379ada1ca2f08e3",
+        "aded36242c3d898e",
+        "0480bc184e476d74",
+        "523b709d18270031",
+        "62dfee2e36cdd7eb",
+        "ac7c7b77a75afbb1",
+        "ba005f2e1b899976",
+        "fdb707c927b529a6",
+        "18b1a2c7e6e6c73b",
+        "a40337065574ecfc",
+        "51c5d60377dddc1a",
+        "d58258a969c427a6",
+        "012c02876460ae9c",
+        "8ef8ea3545ccaa70",
+        "e476dad44700dffa",
+        "244aacc8a39ab787",
+        "fa878255d2583300",
+        "9907028662efcfed",
+        "a3d4ad9377a5270c",
+        "4c8e2b008e68a34f",
+        "307e423e6be3ae9a",
+        "56a43bf237cd49cd",
+        "52b37f855d9049a5",
+        "61943bb1c60531a7"
+      ],
+      "chars": 8732,
+      "strings": 610,
+      "digest": "88a4ec4393ecb43e"
+    },
+    "SUPPLEMENTS": {
+      "count": 17,
+      "ids": [
+        "s_whey",
+        "s_creatine",
+        "s_vitd",
+        "s_omega3",
+        "s_magnesium",
+        "s_multivit",
+        "s_b12",
+        "s_curcumin",
+        "s_caffeine",
+        "s_ashwa",
+        "s_bcaa",
+        "s_glutamine",
+        "s_fatburner",
+        "s_tribulus",
+        "s_nmn",
+        "s_resveratrol",
+        "s_cla"
+      ],
+      "hashes": [
+        "90f7160cdf47c0b9",
+        "dfa805d8a5d13115",
+        "c57ca05d695606cf",
+        "3b998abfbde106c4",
+        "3695b23e6f4427c5",
+        "9ce0b447ece3d8be",
+        "9c5b5f9f43550311",
+        "8ee8b4af3a8a6fc4",
+        "43099c22bf5ef477",
+        "a1a06c884cd546a0",
+        "51c01f2938b0b28a",
+        "b31b8c41cdd7e419",
+        "1bbaa7dff5acf071",
+        "2ca66fc5024b8ff4",
+        "7fec6ac5e5f9b1bd",
+        "258194f5e5c3ebbb",
+        "491460c984df7d07"
+      ],
+      "chars": 4580,
+      "strings": 214,
+      "digest": "9dc6e454a6d7f5e0"
+    },
+    "HERBS": {
+      "count": 11,
+      "ids": [
+        "h_shanyao",
+        "h_fuling",
+        "h_yiyiren",
+        "h_chenpi",
+        "h_bbiandou",
+        "h_heye",
+        "h_cslbs",
+        "h_sjzt",
+        "h_echt",
+        "h_baduanjin",
+        "h_ziwujue"
+      ],
+      "hashes": [
+        "0ccb5ea87058cd15",
+        "1cd63dc0c4d9d039",
+        "8f12b523fb5d7692",
+        "21a4c28af3100c63",
+        "347786e1fbac283c",
+        "7fb365764eb197ac",
+        "989f160c07be4f91",
+        "a714f91c14f2cfce",
+        "6ac4de47a2bc2442",
+        "8cb4b6c0bf3ad014",
+        "4af66c8cee68be80"
+      ],
+      "chars": 1742,
+      "strings": 127,
+      "digest": "b88885e4a891912b"
+    },
+    "RELEASE": {
+      "count": 17,
+      "ids": [
+        "r_sleep",
+        "r_nutri",
+        "r_active",
+        "r_foam",
+        "r_ball",
+        "r_gun",
+        "r_iaSTM",
+        "r_stretch",
+        "r_area_leg",
+        "r_area_push",
+        "r_area_pull",
+        "r_area_sed",
+        "r_acup",
+        "r_tuina",
+        "r_guasha",
+        "r_cupping",
+        "r_mofu"
+      ],
+      "hashes": [
+        "af1058e7197c2127",
+        "dff772ea8a89e8bb",
+        "26ab0f00fe57e965",
+        "f0f1246eada82bbe",
+        "746f3d7146b280c4",
+        "aa38e91241a62406",
+        "1245796178f76d1e",
+        "1788b4e6775ab3db",
+        "fbd39645e6d0eb60",
+        "b0e5277ad158bb19",
+        "76cc25f1e74ee280",
+        "73e23710e7646b45",
+        "40716fa3da3f2559",
+        "e7fa016b23f9e7e5",
+        "92f2be50fc0c6ff8",
+        "51a3522d21c72c13",
+        "a8473947eeae33dc"
+      ],
+      "chars": 4079,
+      "strings": 170,
+      "digest": "1ce230853af8e758"
+    },
+    "LONGEVITY": {
+      "count": 20,
+      "ids": [
+        "lg_resist",
+        "lg_cardio",
+        "lg_protein",
+        "lg_sleep",
+        "lg_cr",
+        "lg_diet",
+        "lg_steps",
+        "lg_alc",
+        "lg_social",
+        "lg_marker",
+        "lg_creatine",
+        "lg_omega3",
+        "lg_vitd",
+        "lg_mag",
+        "lg_debunk",
+        "lg_rx",
+        "lg_grip",
+        "lg_balance",
+        "lg_gait",
+        "lg_bodycomp"
+      ],
+      "hashes": [
+        "d3f55fc7dea16d9d",
+        "1c0234e812ad0f63",
+        "4bc0406bd85df9a9",
+        "6c9e4c0d1a8d83d1",
+        "a5b21d379a37c305",
+        "f6907762c0cb9bfc",
+        "967db60b49924937",
+        "94b1272747aed86d",
+        "330f584b3deedc53",
+        "668e0118f3579de8",
+        "f447e488f0fa52b2",
+        "3f250536c0b23f3a",
+        "cdba08bea0539cb5",
+        "9b7fe01000f18ddf",
+        "7d5ade9d60897623",
+        "4acba1a4b98fe2ea",
+        "ce013db551a2377d",
+        "a8778fc7b8ae4324",
+        "82b6c19db24dd820",
+        "0c145f15c90c0f58"
+      ],
+      "chars": 5714,
+      "strings": 200,
+      "digest": "73b3df6ec1bb6cbe"
+    },
+    "SKINCARE": {
+      "count": 17,
+      "ids": [
+        "sk_sunscreen",
+        "sk_retinoid",
+        "sk_barrier",
+        "sk_cleanser",
+        "sk_niacinamide",
+        "sk_vitc",
+        "sk_azelaic",
+        "sk_bakuchiol",
+        "sk_peptide",
+        "sk_ha",
+        "sk_aha",
+        "sk_retinal",
+        "sk_medical",
+        "sk_growth",
+        "sk_oralcollagen",
+        "sk_device",
+        "sk_maskover"
+      ],
+      "hashes": [
+        "78fdd14b625ee5ae",
+        "b1a8f2adfff071b0",
+        "0def9e0415e25b78",
+        "f7dbf81e346bbe8e",
+        "b9da51500c5c3b27",
+        "7f93dc17eaa04e63",
+        "4857cde249987594",
+        "4480c2c709c87b9c",
+        "b24b063caf93e9f7",
+        "a1bdf29ccd2210e7",
+        "3802947474db12e4",
+        "e40422d5c964b9ca",
+        "89969d302f16366f",
+        "66e02c061c56b505",
+        "6e5e486a131c1a92",
+        "3e76401ae5bbae4c",
+        "d273f753ec920d46"
+      ],
+      "chars": 8331,
+      "strings": 238,
+      "digest": "811f30d87bbd7e4b"
+    },
+    "FOODS": {
+      "count": 25,
+      "ids": [
+        "f_chicken",
+        "f_egg",
+        "f_salmon",
+        "f_greek",
+        "f_rice",
+        "f_brownrice",
+        "f_oats",
+        "f_broccoli",
+        "f_banana",
+        "f_apple",
+        "f_whey",
+        "f_wheatbread",
+        "f_ryeoats",
+        "f_corn",
+        "f_sx_chickenrice",
+        "f_sx_duckrice",
+        "f_jgb",
+        "f_mt_ywx",
+        "f_mt_qzrm",
+        "f_mt_tdp",
+        "f_mt_ljcr",
+        "f_roastduck",
+        "f_changfen",
+        "f_fitmeal",
+        "f_chx_sandwich"
+      ],
+      "hashes": [
+        "c390e568a5ee8f6e",
+        "2092fdf5f23974cd",
+        "ef9bd4cc7f7005f3",
+        "690a44cf22511f3e",
+        "ddd0d6dba8ad6d97",
+        "6da7a3a5446d74da",
+        "84d3c4212a890f7e",
+        "37355c8beca75fe0",
+        "ca5df82901515d9a",
+        "a1aa462fe0410fcd",
+        "6603b52a42c29835",
+        "83caf12a66b43d0f",
+        "bf796fce670ead23",
+        "c4aa64ea5763a40f",
+        "aff8b66061f11275",
+        "cb46ee4f73b06c53",
+        "fe07e550f0d06f7e",
+        "70967befe2485c22",
+        "3786abca805d44da",
+        "bbba347788047f5f",
+        "d1129bca712c1c79",
+        "a2551295ee5e68c0",
+        "db9a60526a950050",
+        "bdd760d514e288fb",
+        "8736e40ec2401dac"
+      ],
+      "chars": 584,
+      "strings": 100,
+      "digest": "c06f2262c5bf933e"
+    }
+  },
+  "singletons": {
+    "PLAN": {
+      "keys": [
+        "template",
+        "week"
+      ],
+      "hash": "b9a514021340bebf",
+      "chars": 478,
+      "strings": 40
+    },
+    "DATA": {
+      "keys": [
+        "profile",
+        "library",
+        "plan",
+        "logs",
+        "metrics",
+        "diet",
+        "supps",
+        "foods",
+        "herbs",
+        "releases",
+        "longevity",
+        "skincare",
+        "sleep",
+        "flex",
+        "tongue",
+        "journal"
+      ],
+      "hash": "f77468d5f1e12556",
+      "chars": 9805,
+      "strings": 752
+    }
+  },
+  "config": {
+    "TARGET": {
+      "kcalMin": 1900,
+      "kcalMax": 2400,
+      "proTrain": 120,
+      "proRest": 100,
+      "tdee": 2550
+    },
+    "CATS": [
+      {
+        "k": "push",
+        "label": "推"
+      },
+      {
+        "k": "pull",
+        "label": "拉"
+      },
+      {
+        "k": "legs",
+        "label": "腿"
+      },
+      {
+        "k": "core",
+        "label": "核心"
+      },
+      {
+        "k": "cardio",
+        "label": "有氧/功法"
+      },
+      {
+        "k": "mob",
+        "label": "功能/稳定"
+      }
+    ],
+    "TIERS": [
+      {
+        "k": "core",
+        "label": "基础必备"
+      },
+      {
+        "k": "daily",
+        "label": "日常基础"
+      },
+      {
+        "k": "optional",
+        "label": "可选"
+      },
+      {
+        "k": "excluded",
+        "label": "已排除"
+      }
+    ],
+    "HTYPES": [
+      {
+        "k": "food",
+        "label": "药食同源"
+      },
+      {
+        "k": "formula",
+        "label": "经典方剂"
+      },
+      {
+        "k": "lifestyle",
+        "label": "起居功法"
+      }
+    ],
+    "RTYPES": [
+      {
+        "k": "basis",
+        "label": "恢复基石"
+      },
+      {
+        "k": "tool",
+        "label": "松解工具"
+      },
+      {
+        "k": "area",
+        "label": "分部位方案"
+      },
+      {
+        "k": "tcm",
+        "label": "中医手法"
+      }
+    ],
+    "LTYPES": [
+      {
+        "k": "habit",
+        "label": "生活习惯"
+      },
+      {
+        "k": "supp",
+        "label": "补剂/营养"
+      },
+      {
+        "k": "action",
+        "label": "行为动作"
+      }
+    ],
+    "STIERS": [
+      {
+        "k": "core",
+        "label": "基础必备"
+      },
+      {
+        "k": "optional",
+        "label": "可选加成"
+      },
+      {
+        "k": "excluded",
+        "label": "已排除/祛魅"
+      }
+    ]
+  },
+  "glossary": {
+    "groups": [
+      {
+        "name": "一、动作与身体",
+        "count": 7
+      },
+      {
+        "name": "二、训练强度与量",
+        "count": 8
+      },
+      {
+        "name": "三、身体与体检指标",
+        "count": 9
+      },
+      {
+        "name": "四、文献与机构（读「来源」栏时会遇到）",
+        "count": 10
+      }
+    ],
+    "total": 34,
+    "hash": "db6d52b21621706d",
+    "chars": 2226,
+    "strings": 72
+  },
+  "kbLabels": {
+    "KB_SUPP": {
+      "hash": "5c62b4b690e8aee7",
+      "normHash": "5c62b4b690e8aee7",
+      "count": 12,
+      "labels": [
+        "作用 · 剂量 · 风险 · 来源",
+        "剂量",
+        "时机",
+        "证据",
+        "安全性",
+        "作用",
+        "剂量",
+        "时机",
+        "副作用",
+        "禁忌",
+        "相互作用",
+        "提示"
+      ]
+    },
+    "KB_HERB": {
+      "hash": "82c190bff38cb3f7",
+      "normHash": "82c190bff38cb3f7",
+      "count": 13,
+      "labels": [
+        "功效 · 用量 · 禁忌 · 来源",
+        "性味",
+        "用量",
+        "适用",
+        "组成",
+        "性味",
+        "功效",
+        "适用",
+        "用量",
+        "禁忌",
+        "配伍",
+        "提醒",
+        "<div class=\"small warn mt-3\">注意：方剂条目仅科普溯源，禁止自行抓药</div>"
+      ]
+    },
+    "KB_REL": {
+      "hash": "341d8a1a3af0a04e",
+      "normHash": "341d8a1a3af0a04e",
+      "count": 8,
+      "labels": [
+        "做法 · 时机 · 禁忌 · 来源",
+        "频次",
+        "证据",
+        "作用",
+        "做法",
+        "何时做",
+        "禁忌",
+        "提醒"
+      ]
+    },
+    "KB_LONG": {
+      "hash": "101aae264de213f1",
+      "normHash": "101aae264de213f1",
+      "count": 8,
+      "labels": [
+        "怎么做 · 指标 · 注意 · 来源",
+        "指标",
+        "证据",
+        "作用",
+        "怎么做",
+        "指标",
+        "注意",
+        "提醒"
+      ]
+    },
+    "KB_SKIN": {
+      "hash": "311486b07d17e2c7",
+      "normHash": "311486b07d17e2c7",
+      "count": 12,
+      "labels": [
+        "功效 · 用法 · 风险 · 价格 · 来源",
+        "频次",
+        "参考",
+        "证据",
+        "安全性",
+        "功效",
+        "用法",
+        "时机",
+        "价格",
+        "风险",
+        "禁忌",
+        "配伍"
+      ]
+    }
+  },
+  "uiConsts": {
+    "APP_VERSION": {
+      "hash": "f6e4c9553a128195",
+      "chars": 28,
+      "droppedByDesign": false
+    },
+    "TAB_GROUPS": {
+      "hash": "e7cb11592b24ebe2",
+      "chars": 419,
+      "droppedByDesign": true
+    },
+    "TABS": {
+      "hash": "d4561c36d670169e",
+      "chars": 196,
+      "droppedByDesign": true
+    },
+    "GLOSSARY": {
+      "hash": "f28bc37c37ec190b",
+      "chars": 2787,
+      "droppedByDesign": false
+    },
+    "DAY_LABELS": {
+      "hash": "fbbe82a661889b6c",
+      "chars": 54,
+      "droppedByDesign": false
+    },
+    "OV_MODS": {
+      "hash": "0c9584d0691fbe70",
+      "chars": 420,
+      "droppedByDesign": false
+    },
+    "DS2_SRC": {
+      "hash": "873d4b11ec247f00",
+      "chars": 23,
+      "droppedByDesign": false
+    },
+    "DS2": {
+      "hash": "09e322735775cb66",
+      "chars": 702,
+      "droppedByDesign": false
+    },
+    "DS_SRC": {
+      "hash": "ccdb81b9f51df9dd",
+      "chars": 22,
+      "droppedByDesign": false
+    },
+    "DS_ATTR": {
+      "hash": "d8f318ec72ac8002",
+      "chars": 38,
+      "droppedByDesign": false
+    },
+    "DS": {
+      "hash": "d443ade770be69eb",
+      "chars": 7061,
+      "droppedByDesign": false
+    },
+    "CHART_SERIES": {
+      "hash": "04bd59d37e6b74d8",
+      "chars": 179,
+      "droppedByDesign": false
+    },
+    "KB_SUPP": {
+      "hash": "5c62b4b690e8aee7",
+      "chars": 623,
+      "droppedByDesign": false
+    },
+    "KB_HERB": {
+      "hash": "82c190bff38cb3f7",
+      "chars": 646,
+      "droppedByDesign": false
+    },
+    "KB_REL": {
+      "hash": "341d8a1a3af0a04e",
+      "chars": 405,
+      "droppedByDesign": false
+    },
+    "KB_LONG": {
+      "hash": "101aae264de213f1",
+      "chars": 477,
+      "droppedByDesign": false
+    },
+    "KB_SKIN": {
+      "hash": "311486b07d17e2c7",
+      "chars": 556,
+      "droppedByDesign": false
+    },
+    "SOLAR_TERMS": {
+      "hash": "2d83488a2f92a642",
+      "chars": 852,
+      "droppedByDesign": false
+    },
+    "BACKUP_REASON": {
+      "hash": "71fe2d8149d96990",
+      "chars": 158,
+      "droppedByDesign": false
+    }
+  },
+  "totals": {
+    "entries": 156,
+    "chars": 46271,
+    "strings": 2523,
+    "digest": "dac36ff6464c099f"
+  }
+}

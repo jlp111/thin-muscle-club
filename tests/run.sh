@@ -1,5 +1,5 @@
 #!/bin/sh
-# 薄肌训练系统 · 一键回归
+# 薄肌俱乐部 · 一键回归
 # 用法：
 #   sh tests/run.sh                                             # 源系统回归（index.html）
 #   TM_TARGET=migrate/out/index-tracker.html sh tests/run.sh    # 合并版回归（交付物）

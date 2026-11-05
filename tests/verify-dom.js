@@ -1,4 +1,4 @@
-/* 薄肌训练系统 · DOM 冒烟测试（jsdom：真实渲染 + 真实交互）
+/* 薄肌俱乐部 · DOM 冒烟测试（jsdom：真实渲染 + 真实交互）
    用法：TZ=Asia/Shanghai node tests/verify-dom.js
    依赖：jsdom（若未安装会给出提示并退出，不影响逻辑层测试）
    覆盖：12 页渲染 / 日期默认值 / label 关联 / 知识库灰化 / 清单开关 /

@@ -1,4 +1,4 @@
-/* 薄肌训练系统 · 逻辑层回归测试（纯 Node，零依赖）
+/* 薄肌俱乐部 · 逻辑层回归测试（纯 Node，零依赖）
    用法：TZ=Asia/Shanghai node tests/verify-logic.js
    覆盖：Util 日期口径 / Schema.normalize / 版本迁移 / 导入校验 / 删除黑名单 /
         体测趋势 / 饮食空判定 / 持久化失败可见化 / 存储损坏抢救 */

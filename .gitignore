@@ -1,19 +1,37 @@
 # ============================================================
-# 薄肌训练系统 · 开源仓库忽略规则
+# 薄肌俱乐部 · 开源仓库忽略规则
 # 原则：凡是「含真实个人信息」或「仅本地开发使用」的文件都不进仓库。
 # ============================================================
 
 # ---- 本地个人画像（含真实身体数据，绝不入库）----------------
-# 复制 profile.local.example.js 为 profile.local.js 并填入自己的真实画像。
-# index.html 启动时会尝试加载它；文件不存在则回落到内置中性示例值。
-# 注意：模板 profile.local.example.js 本身要入库，只有真实画像被排除。
-# 下面的通配会连模板一起匹配到，故必须用 ! 显式放行（顺序不可调换）。
+# 复制 profile.local.example.js 为 profile.local.js 并填入自己的真实画像，
+# 再在 index.html 主脚本之前加一个 src 指向它的 script 标签；文件不存在则
+# 回落到内置中性示例值，或直接用「我的 → 编辑资料」修改（推荐）。
 profile.local.js
 profile.local.*.js
 !profile.local.example.js
 
 # ---- 开发过程记录（含健康数据、内部笔记与第三方个人信息）-----
 .workbuddy/
+
+# ---- 本地开发/验收工作区（不随开源发布）---------------------
+# 历史版本备份、体检副本、设计验证脚本与截图、参考仓库快照
+backup/
+deploy_v5/
+deploy_v6/
+deploy_v7/
+deploy_v8/
+deploy_round1_legacy_*/
+deploy_v9/backup/
+design-demos/
+fonts/
+refs/
+_probe/
+_t_*.html
+_br.html
+gh_loaders.json
+gh_meta.json
+gh_tree.json
 
 # ---- 历史版本备份（脱敏前的旧文件，含真实数据）---------------
 index.html.bak-*
@@ -44,8 +62,8 @@ node_modules/
 .shots/
 
 # ---- 本地开发过程产物（含真实健康数据与调度日志，禁止入库）-------
-# migrate/ 的 *.log 记录了码道智能体的完整调度过程，内含真实体重/体脂/
-# 城市/用户标识共 1400+ 处；src/.snapshots/ 更是未脱敏的旧版 index.html。
+# migrate/ 的 *.log 记录了调度过程，内含真实体重/体脂/城市/用户标识；
+# src/.snapshots/ 更是未脱敏的旧版 index.html。
 migrate/
 refactor_src/
 # skill 归档导出目录（含生成器脚本与临时凭证排查脚本）
